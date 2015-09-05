@@ -1,0 +1,24 @@
+{
+  "name": "twitch-get-stream",
+  "version": "0.1.0",
+  "description": "Gets the m3u8 direct stream URLs of a live stream on twitch.tv.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicholastay/node-twitch-get-stream.git"
+  },
+  "author": "Nicholas Tay <nexerq@gmail.com> (http://nicholastay.github.io)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nicholastay/node-twitch-get-stream/issues"
+  },
+  "homepage": "https://github.com/nicholastay/node-twitch-get-stream#readme",
+  "dependencies": {
+    "playlist-parser": "0.0.12",
+    "request": "^2.61.0",
+    "underscore": "^1.8.3"
+  }
+}
