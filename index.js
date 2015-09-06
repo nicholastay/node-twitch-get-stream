@@ -33,7 +33,12 @@ function getPlaylist(channel, accessToken, cb) {
   });
 }
 
-function getStreamUrls(channel, cb) {
+function getStreamUrls(chan, cb) {
+  if (!chan) {
+    cb (new Error("No channel given."));
+  }
+
+  var channel = chan.toLowerCase(); // Twitch API only takes lowercase
   getAccessToken(channel, function (err, response) {
     if (err) {
       return cb(err);
