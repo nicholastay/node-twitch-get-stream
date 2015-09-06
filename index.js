@@ -10,6 +10,12 @@ function getRandomIntInclusive(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// Thanks michaelowens, :)
+// Simple titlecase thing, capitalize first letter
+function titleCase (str) {
+    return str.split(' ').map(function (word) { return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); }).join(' ');
+}
+
 function getAccessToken(channel, cb) {
   // Get access token
   request('http://api.twitch.tv/api/channels/' + channel + '/access_token', function (err, response, body) {
@@ -49,11 +55,42 @@ function getStreamUrls(chan, cb) {
         return cb (err);
       }
 
-      if (response < 1) {
+      if (response.length < 1) {
         return cb (new Error("There were no results, maybe the channel is offline?"));
       }
 
-      return cb(null, response);
+      // Parse playlist with quality options and send to new array of objects
+      var streamLinks = [];
+      for (var i = 0; i < response.length; i++) {
+        // Quality option
+        var name = response[i].title.match(/VIDEO="(.*?)"/); // Raw quality name
+        name = name[1]; // Get regex captured group
+
+        // chunked = source
+        if (name === 'chunked') {
+          name = "source";
+        }
+
+        // audio_only = Audio Only
+        if (name === 'audio_only') {
+          name = "audio only";
+        }
+
+        // Resolution
+        var resMatch = response[i].title.match(/RESOLUTION=(.*?),/);
+        var res = null;
+        if (resMatch) {
+          res = resMatch[1]; // Audio only does not have a res so we need this check
+        } 
+        
+        streamLinks.push({
+          quality: titleCase(name), // Title case the quality
+          resolution: res,
+          url: response[i].file
+        });
+      }
+
+      return cb(null, streamLinks);
     });
   });
 }
