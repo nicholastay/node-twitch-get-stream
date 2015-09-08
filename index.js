@@ -31,15 +31,14 @@ function getPlaylist(channel, accessToken, cb) {
   var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?player=twitchweb&&token=' + accessToken.token + '&sig=' + accessToken.sig + '&allow_audio_only=true&allow_source=true&type=any&p=' + getRandomIntInclusive(1, 99999);
   request(url, function (err, response, body) {
     if (!err && response.statusCode == 200) {
-      var playlist = M3U.parse(body);
-      return cb (null, _us.compact(playlist));
+      return cb (null, body);
     } else {
       return cb (new Error('Could not access the twitch API to get the playlist.'));
     }
   });
 }
 
-function getStreamUrls(chan, cb) {
+function getStreamUrls(chan, cb) { // This returns the one with an object
   if (!chan) {
     return cb (new Error("No channel given."));
   }
@@ -55,15 +54,17 @@ function getStreamUrls(chan, cb) {
         return cb (err);
       }
 
-      if (response.length < 1) {
+      var playlist = _us.compact(M3U.parse(response));
+
+      if (playlist.length < 1) {
         return cb (new Error("There were no results, maybe the channel is offline?"));
       }
 
       // Parse playlist with quality options and send to new array of objects
       var streamLinks = [];
-      for (var i = 0; i < response.length; i++) {
+      for (var i = 0; i < playlist.length; i++) {
         // Quality option
-        var name = response[i].title.match(/VIDEO="(.*?)"/); // Raw quality name
+        var name = playlist[i].title.match(/VIDEO="(.*?)"/); // Raw quality name
         name = name[1]; // Get regex captured group
 
         // chunked = source
@@ -77,7 +78,7 @@ function getStreamUrls(chan, cb) {
         }
 
         // Resolution
-        var resMatch = response[i].title.match(/RESOLUTION=(.*?),/);
+        var resMatch = playlist[i].title.match(/RESOLUTION=(.*?),/);
         var res = null;
         if (resMatch) {
           res = resMatch[1]; // Audio only does not have a res so we need this check
@@ -86,7 +87,7 @@ function getStreamUrls(chan, cb) {
         streamLinks.push({
           quality: titleCase(name), // Title case the quality
           resolution: res,
-          url: response[i].file
+          url: playlist[i].file
         });
       }
 
@@ -95,4 +96,50 @@ function getStreamUrls(chan, cb) {
   });
 }
 
-module.exports = getStreamUrls;
+function getPlaylistOnly(chan, cb) { // Just gets the m3u8 initial playlist as string and hands to user
+  if (!chan) {
+    return cb (new Error("No channel given."));
+  }
+
+  var channel = chan.toLowerCase(); // Twitch API only takes lowercase
+  getAccessToken(channel, function (err, response) {
+    if (err) {
+      return cb(err);
+    }
+
+    getPlaylist(channel, response, function (err, resp) {
+      if (err) {
+        return cb (err);
+      }
+
+      return cb(null, resp);
+    });
+  });
+}
+
+function getPlaylistParsed(chan, cb) { // Just gets the m3u8 initial playlist as string and hands to user
+  if (!chan) {
+    return cb (new Error("No channel given."));
+  }
+
+  var channel = chan.toLowerCase(); // Twitch API only takes lowercase
+  getAccessToken(channel, function (err, response) {
+    if (err) {
+      return cb(err);
+    }
+
+    getPlaylist(channel, response, function (err, resp) {
+      if (err) {
+        return cb (err);
+      }
+
+      return cb(null, _us.compact(M3U.parse(resp)));
+    });
+  });
+}
+
+module.exports = {
+  get: getStreamUrls,
+  raw: getPlaylistOnly,
+  rawParsed: getPlaylistParsed
+};
