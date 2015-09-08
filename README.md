@@ -23,5 +23,13 @@ The output will be as an array of objects, example:
 ]
 ```
 
+### Other uses
+```javascript
+twitchStream.raw('channel', callback);
+twitchStream.rawParsed('channel', callback);
+```
+Similar to above, however `.raw` is used for getting the raw m3u8 data as a string, and `.rawParsed` is used to get the raw data, parsed through the m3u8 lib into an object.
+
+
 ## Other
 If theres anything else you want with this module, do tell me but I just put together this module for another project I was working on. Feel free to issue a pull request if you have any code changes you want to contribute yourself.
