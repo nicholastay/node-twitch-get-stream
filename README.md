@@ -33,3 +33,7 @@ Similar to above, however `.raw` is used for getting the raw m3u8 data as a stri
 
 ## Other
 If theres anything else you want with this module, do tell me but I just put together this module for another project I was working on. Feel free to issue a pull request if you have any code changes you want to contribute yourself.
+
+
+## License
+This project is licensed under the terms of the MIT license.
