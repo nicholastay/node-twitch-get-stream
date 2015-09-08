@@ -1,6 +1,6 @@
 {
   "name": "twitch-get-stream",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Gets the m3u8 direct stream URLs of a live stream on twitch.tv.",
   "main": "index.js",
   "scripts": {
