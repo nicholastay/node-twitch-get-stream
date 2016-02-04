@@ -8,9 +8,12 @@ Gets the m3u8 direct stream URLs of a live stream on twitch.tv.
 ```javascript
 var twitchStreams = require('twitch-get-stream');
 ...
-twitchStreams.get('channel', callback);
+twitchStreams.get('channel')
+.then(function(streams) {
+    ...
+});
 ```
-(where 'channel' is the channel of your choice)
+(where 'channel' is the channel of your choice, and all functions are promises, but callbacks can be used as they are converted via the `promise` library's `nodeify` function.)
 
 The output will be as an array of objects, example:
 ```javascript
@@ -25,8 +28,8 @@ The output will be as an array of objects, example:
 
 ### Other uses
 ```javascript
-twitchStream.raw('channel', callback);
-twitchStream.rawParsed('channel', callback);
+twitchStream.raw('channel');
+twitchStream.rawParsed('channel');
 ```
 Similar to above, however `.raw` is used for getting the raw m3u8 data as a string, and `.rawParsed` is used to get the raw data, parsed through the m3u8 lib into an object.
 
