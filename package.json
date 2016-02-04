@@ -19,7 +19,7 @@
   "dependencies": {
     "lodash.compact": "^3.0.0",
     "playlist-parser": "0.0.12",
-    "request": "^2.61.0"
+    "superagent": "^1.7.2"
   },
   "keywords": [
     "twitch",

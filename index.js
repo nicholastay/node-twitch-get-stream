@@ -1,4 +1,4 @@
-var request = require('request');
+var request = require('superagent');
 var M3U = require('playlist-parser').M3U;
 var _compact = require('lodash.compact');
 
@@ -17,24 +17,32 @@ var titleCase = function(str) {
 
 var getAccessToken = function(channel, cb) {
   // Get access token
-  request('http://api.twitch.tv/api/channels/' + channel + '/access_token', function(err, response, body) {
-    if (!err && response.statusCode == 200) {
-      return cb(null, JSON.parse(body));
-    } else {
-      return cb(new Error('Could not access the twitch API to get the access token'));
-    }
-  });
+  request
+    .get('http://api.twitch.tv/api/channels/' + channel + '/access_token')
+    .end(function(err, res) {
+      if (err || !res.ok) return cb(new Error('Could not access the twitch API to get the access token, maybe your internet or twitch is down.'));
+      
+      return cb(null, res.body);
+    });
 }
 
 var getPlaylist = function(channel, accessToken, cb) {
-  var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?player=twitchweb&&token=' + accessToken.token + '&sig=' + accessToken.sig + '&allow_audio_only=true&allow_source=true&type=any&p=' + getRandomIntInclusive(1, 99999);
-  request(url, function(err, response, body) {
-    if (!err && response.statusCode == 200) {
-      return cb(null, body);
-    } else {
-      return cb(new Error('Could not access the twitch API to get the playlist.'));
-    }
-  });
+  request
+    .get('http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8')
+    .query({
+      player: 'twitchweb',
+      token: accessToken.token,
+      sig: accessToken.sig,
+      allow_audio_only: true,
+      allow_source: true,
+      type: 'any',
+      p: getRandomIntInclusive(1, 99999)
+    })
+    .buffer() // buffer the response for m3u data
+    .end(function(err, res) {
+      if (err || !res.ok) return cb(new Error('Could not access the twitch API to get the playlist, maybe your internet or twitch is down.'));
+      return cb(null, res.text);
+    });
 }
 
 var getStreamUrls = function(chan, cb) { // This returns the one with an object
