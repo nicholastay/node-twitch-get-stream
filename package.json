@@ -19,6 +19,7 @@
   "dependencies": {
     "lodash.compact": "^3.0.0",
     "playlist-parser": "0.0.12",
+    "promise": "^7.1.1",
     "superagent": "^1.7.2"
   },
   "keywords": [

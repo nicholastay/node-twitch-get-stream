@@ -1,7 +1,9 @@
+var Promise = require('promise');
 var request = require('superagent');
 var M3U = require('playlist-parser').M3U;
 var _compact = require('lodash.compact');
 
+// Some functions that help along the way
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
 // Returns a random integer between min (included) and max (included)
 // Using Math.round() will give you a non-uniform distribution!
@@ -15,114 +17,101 @@ var titleCase = function(str) {
     return str.split(' ').map(function(word) { return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); }).join(' ');
 }
 
-var getAccessToken = function(channel, cb) {
+
+// Twitch functions
+var getAccessToken = function(channel) {
   // Get access token
-  request
-    .get('http://api.twitch.tv/api/channels/' + channel + '/access_token')
-    .end(function(err, res) {
-      if (err || !res.ok) return cb(new Error('Could not access the twitch API to get the access token, maybe your internet or twitch is down.'));
-      
-      return cb(null, res.body);
-    });
-}
-
-var getPlaylist = function(channel, accessToken, cb) {
-  request
-    .get('http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8')
-    .query({
-      player: 'twitchweb',
-      token: accessToken.token,
-      sig: accessToken.sig,
-      allow_audio_only: true,
-      allow_source: true,
-      type: 'any',
-      p: getRandomIntInclusive(1, 99999)
-    })
-    .buffer() // buffer the response for m3u data
-    .end(function(err, res) {
-      if (err || !res.ok) return cb(new Error('Could not access the twitch API to get the playlist, maybe your internet or twitch is down.'));
-      return cb(null, res.text);
-    });
-}
-
-var getStreamUrls = function(chan, cb) { // This returns the one with an object
-  if (!chan) return cb(new Error('No channel given.'));
-
-  var channel = chan.toLowerCase(); // Twitch API only takes lowercase
-  getAccessToken(channel, function(err, response) {
-    if (err) return cb(err);
-
-    getPlaylist(channel, response, function(err, response) {
-      if (err) return cb(err);
-
-      var playlist = _compact(M3U.parse(response));
-
-      if (playlist.length < 1) return cb (new Error('There were no results, maybe the channel is offline?'));
-
-      // Parse playlist with quality options and send to new array of objects
-      var streamLinks = [];
-      for (var i = 0; i < playlist.length; i++) {
-        // Quality option
-        var name = playlist[i].title.match(/VIDEO=('|")(.*?)('|")/); // Raw quality name
-        name = name[2]; // Get regex captured group
-
-        // chunked = source
-        if (name === 'chunked') name = 'source';
-
-        // audio_only = Audio Only
-        if (name === 'audio_only') name = 'audio only';
-
-        // Resolution
-        var resMatch = playlist[i].title.match(/RESOLUTION=(.*?),/);
-        var res = null;
-        if (resMatch) res = resMatch[1]; // Audio only does not have a res so we need this check
+  return new Promise(function(resolve, reject) {
+    request
+      .get('http://api.twitch.tv/api/channels/' + channel + '/access_token')
+      .end(function(err, res) {
+        if (err) return reject(err);
+        if (!res.ok) return reject(new Error('Could not access the twitch API to get the access token, maybe your internet or twitch is down.'));
         
-        streamLinks.push({
-          quality: titleCase(name), // Title case the quality
-          resolution: res,
-          url: playlist[i].file
-        });
-      }
-
-      return cb(null, streamLinks);
-    });
+        return resolve(res.body);
+      });
   });
 }
 
-var getPlaylistOnly = function(chan, cb) { // Just gets the m3u8 initial playlist as string and hands to user
-  if (!chan) {
-    return cb (new Error('No channel given.'));
-  }
-
-  var channel = chan.toLowerCase(); // Twitch API only takes lowercase
-  getAccessToken(channel, function(err, response) {
-    if (err) return cb(err);
-
-    getPlaylist(channel, response, function(err, resp) {
-      if (err) return cb (err);
-
-      return cb(null, resp);
-    });
+var getPlaylist = function(channel, accessToken) {
+  // Get the playlist with given access token data (parsed /access_token response)
+  return new Promise(function(resolve, reject) {
+    request
+      .get('http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8')
+      .query({
+        player: 'twitchweb',
+        token: accessToken.token,
+        sig: accessToken.sig,
+        allow_audio_only: true,
+        allow_source: true,
+        type: 'any',
+        p: getRandomIntInclusive(1, 99999)
+      })
+      .buffer() // buffer the response for m3u data
+      .end(function(err, res) {
+        if (err) return reject(err);
+        if (!res.ok) return reject(new Error('Could not access the twitch API to get the playlist, maybe your internet or twitch is down.'));
+        
+        return resolve(res.text);
+      });
   });
 }
 
-var getPlaylistParsed = function(chan, cb) { // Just gets the m3u8 initial playlist as string and hands to user
-  if (!chan) return cb(new Error('No channel given.'));
+// Exposed functions
+// Just get the playlist, return the string nothing else
+var getPlaylistOnly = function(channel) {
+  if (!channel) return Promise.reject(new Error('No channel defined.'));
 
-  var channel = chan.toLowerCase(); // Twitch API only takes lowercase
-  getAccessToken(channel, function(err, response) {
-    if (err) return cb(err);
+  var channel = channel.toLowerCase(); // Twitch API only takes lowercase
+  return getAccessToken(channel)
+  .then(function(token) {
+    return getPlaylist(channel, token)
+  });
+}
 
-    getPlaylist(channel, response, function(err, resp) {
-      if (err) return cb(err);
+// Above get playlist, but then parses it and gives the object
+var getPlaylistParsed = function(channel) {
+  return getPlaylistOnly(channel)
+  .then(function(data) {
+    return Promise.resolve(_compact(M3U.parse(data)));
+  });
+}
 
-      return cb(null, _compact(M3U.parse(resp)));
-    });
+var getStreamUrls = function(channel) { // This returns the one with a custom fully parsed object
+  return getPlaylistParsed(channel)
+  .then(function(playlist) {
+    if (playlist.length < 1) return Promise.reject(new Error('There were no results, maybe the channel is offline?'));
+
+    // Parse playlist with quality options and send to new array of objects
+    var streamLinks = [];
+    for (var i = 0; i < playlist.length; i++) {
+      // Quality option
+      var name = playlist[i].title.match(/VIDEO=('|")(.*?)('|")/); // Raw quality name
+      name = name[2]; // Get regex captured group
+
+      // Rename checks
+      // chunked = source
+      if (name === 'chunked') name = 'source';
+      // audio_only = Audio Only
+      else if (name === 'audio_only') name = 'audio only';
+
+      // Resolution
+      var resMatch = playlist[i].title.match(/RESOLUTION=(.*?),/);
+      var res = resMatch ? resMatch[1] : null // Audio only does not have a res so we need this check
+      
+      streamLinks.push({
+        quality: titleCase(name), // Title case the quality
+        resolution: res,
+        url: playlist[i].file
+      });
+    }
+
+    return Promise.resolve(streamLinks);
   });
 }
 
 module.exports = {
-  get: getStreamUrls,
-  raw: getPlaylistOnly,
-  rawParsed: getPlaylistParsed
+  get: Promise.nodeify(getStreamUrls),
+  raw: Promise.nodeify(getPlaylistOnly),
+  rawParsed: Promise.nodeify(getPlaylistParsed)
 };
