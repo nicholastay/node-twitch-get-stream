@@ -1,6 +1,6 @@
 var request = require('request');
 var M3U = require('playlist-parser').M3U;
-var _us = require('underscore/underscore-min');
+var _compact = require('lodash.compact');
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
 // Returns a random integer between min (included) and max (included)
@@ -47,7 +47,7 @@ var getStreamUrls = function(chan, cb) { // This returns the one with an object
     getPlaylist(channel, response, function(err, response) {
       if (err) return cb(err);
 
-      var playlist = _us.compact(M3U.parse(response));
+      var playlist = _compact(M3U.parse(response));
 
       if (playlist.length < 1) return cb (new Error('There were no results, maybe the channel is offline?'));
 
@@ -108,7 +108,7 @@ var getPlaylistParsed = function(chan, cb) { // Just gets the m3u8 initial playl
     getPlaylist(channel, response, function(err, resp) {
       if (err) return cb(err);
 
-      return cb(null, _us.compact(M3U.parse(resp)));
+      return cb(null, _compact(M3U.parse(resp)));
     });
   });
 }

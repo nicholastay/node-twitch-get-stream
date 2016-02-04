@@ -17,9 +17,16 @@
   },
   "homepage": "https://github.com/nicholastay/node-twitch-get-stream#readme",
   "dependencies": {
+    "lodash.compact": "^3.0.0",
     "playlist-parser": "0.0.12",
-    "request": "^2.61.0",
-    "underscore": "^1.8.3"
+    "request": "^2.61.0"
   },
-  "keywords": ["twitch", "twitch.tv", "m3u8", "stream", "livestream", "url"]
+  "keywords": [
+    "twitch",
+    "twitch.tv",
+    "m3u8",
+    "stream",
+    "livestream",
+    "url"
+  ]
 }
