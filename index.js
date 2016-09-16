@@ -2,7 +2,7 @@ var Promise = require('promise');
 var request = require('superagent');
 var M3U = require('playlist-parser').M3U;
 var _compact = require('lodash.compact');
-
+var clid
 // Some functions that help along the way
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
 // Returns a random integer between min (included) and max (included)
@@ -24,6 +24,7 @@ var getAccessToken = function(channel) {
   return new Promise(function(resolve, reject) {
     request
       .get('http://api.twitch.tv/api/channels/' + channel + '/access_token')
+      .set({'Client-ID': clid })
       .end(function(err, res) {
         if (err) return reject(err);
         if (!res.ok) return reject(new Error('Could not access the twitch API to get the access token, maybe your internet or twitch is down.'));
@@ -38,6 +39,7 @@ var getPlaylist = function(channel, accessToken) {
   return new Promise(function(resolve, reject) {
     request
       .get('http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8')
+      .set({'Client-ID': clid })
       .query({
         player: 'twitchweb',
         token: accessToken.token,
@@ -110,8 +112,14 @@ var getStreamUrls = function(channel) { // This returns the one with a custom fu
   });
 }
 
-module.exports = {
-  get: Promise.nodeify(getStreamUrls),
-  raw: Promise.nodeify(getPlaylistOnly),
-  rawParsed: Promise.nodeify(getPlaylistParsed)
+module.exports = 
+  function(clientid) {
+    clid = clientid
+    return {
+      get: Promise.nodeify(getStreamUrls),
+      raw: Promise.nodeify(getPlaylistOnly),
+      rawParsed: Promise.nodeify(getPlaylistParsed)          
+    }
+  
+
 };
