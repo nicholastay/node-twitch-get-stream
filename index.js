@@ -121,5 +121,5 @@ module.exports =
       get: Promise.nodeify(getStreamUrls),
       raw: Promise.nodeify(getPlaylistOnly),
       rawParsed: Promise.nodeify(getPlaylistParsed)          
-    }
+    };
 };
