@@ -40,7 +40,7 @@ var getPlaylist = function(channel, accessToken) {
   // Get the playlist with given access token data (parsed /access_token response)
   return new Promise(function(resolve, reject) {
     request
-      .get('http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8')
+      .get('https://usher.ttvnw.net/api/channel/hls/' + channel + '.m3u8')
       .set({ 'Client-ID': clid })
       .query({
         player: 'twitchweb',
