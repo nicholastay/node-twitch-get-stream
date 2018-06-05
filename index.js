@@ -25,7 +25,7 @@ var getAccessToken = function(channel) {
   // Get access token
   return new Promise(function(resolve, reject) {
     request
-      .get('http://api.twitch.tv/api/channels/' + channel + '/access_token')
+      .get('https://api.twitch.tv/api/channels/' + channel + '/access_token')
       .set({ 'Client-ID': clid })
       .end(function(err, res) {
         if (err) return reject(err);
