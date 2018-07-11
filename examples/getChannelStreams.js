@@ -1,4 +1,5 @@
-var twitchStreams = require('../')('<client-id here - can be obtained from your twitch.tv settings -> connections -> register developer app>');
+var clid = require('./clid.json').clid; // place in clid.json as a property 'clid' - can be obtained from your twitch.tv settings -> connections -> register developer app
+var twitchStreams = require('../')(clid);
 
 twitchStreams.get('Monstercat')
     .then(function(streams) {

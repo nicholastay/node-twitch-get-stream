@@ -6,14 +6,13 @@ Gets the m3u8 direct stream URLs of a live stream on twitch.tv.
 `npm install --save twitch-get-stream`
 
 ```javascript
-var twitchStreams = require('twitch-get-stream')('<your-client-id>'); // twitch now ENFORCES client id usage apparently, so this is now required.
+var twitchStreams = require('twitch-get-stream')('<your-client-id>'); // twitch now ENFORCES client id usage, so this is required.
 ...
 twitchStreams.get('channel')
-.then(function(streams) {
-    ...
-});
+    .then(function(streams) {
+        ...
+    });
 ```
-(where 'channel' is the channel of your choice, and all functions are promises, but callbacks can be used as they are converted via the `promise` library's `nodeify` function.)
 
 The output will be as an array of objects, example:
 ```javascript
@@ -32,6 +31,10 @@ twitchStream.raw('channel');
 twitchStream.rawParsed('channel');
 ```
 Similar to above, however `.raw` is used for getting the raw m3u8 data as a string, and `.rawParsed` is used to get the raw data, parsed through the m3u8 lib into an object.
+
+
+## Upgrading Notes
+* 0.4.1 to 0.5.0 - `.nodeify()` support has been removed in favor of just using the native Promise over the npm package; thus, you **cannot use callbacks anymore**. If you really need callback support, look into some library that can change it back for you. The `superagent` library has also been removed, replaced with `axios`. This change should not affect external code interfacing the library.
 
 
 ## Other

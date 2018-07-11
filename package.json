@@ -1,6 +1,6 @@
 {
   "name": "twitch-get-stream",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Gets the m3u8 direct stream URLs of a live stream on twitch.tv.",
   "main": "index.js",
   "repository": {
@@ -14,10 +14,8 @@
   },
   "homepage": "https://github.com/nicholastay/node-twitch-get-stream#readme",
   "dependencies": {
-    "lodash.compact": "^3.0.0",
-    "playlist-parser": "0.0.12",
-    "promise": "^7.1.1",
-    "superagent": "^1.7.2"
+    "axios": "^0.18.0",
+    "playlist-parser": "0.0.12"
   },
   "keywords": [
     "twitch",

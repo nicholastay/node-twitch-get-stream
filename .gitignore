@@ -7,3 +7,5 @@ npm-debug.log*
 
 #sublime
 *.sublime-workspace
+
+examples/clid.json
