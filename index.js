@@ -2,7 +2,7 @@ var axios = require('axios');
 var M3U = require('playlist-parser').M3U;
 var qs = require('querystring');
 
-var clientId;
+const clientId = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
 
 // Thanks michaelowens, :)
 // Simple titlecase thing, capitalize first letter
@@ -103,12 +103,8 @@ var getStreamUrls = function(channel) { // This returns the one with a custom fu
         });
 }
 
-module.exports = 
-    function(clid) {
-        clientId = clid;
-        return {
-            get: getStreamUrls,
-            raw: getPlaylistOnly,
-            rawParsed: getPlaylistParsed          
-        };
-    };
+module.exports = {
+    get: getStreamUrls,
+    raw: getPlaylistOnly,
+    rawParsed: getPlaylistParsed  
+}
