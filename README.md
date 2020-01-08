@@ -6,7 +6,7 @@ Gets the m3u8 direct stream URLs of a live stream on twitch.tv.
 `npm install --save twitch-get-stream`
 
 ```javascript
-var twitchStreams = require('twitch-get-stream')('<your-client-id>'); // twitch now ENFORCES client id usage, so this is required.
+var twitchStreams = require('twitch-get-stream')
 ...
 twitchStreams.get('channel')
     .then(function(streams) {
