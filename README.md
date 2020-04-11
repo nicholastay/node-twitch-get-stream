@@ -2,6 +2,8 @@ node-twitch-get-stream
 ==========================
 Gets the m3u8 direct stream URLs of a live stream on twitch.tv.
 
+**NOTE**: v0.6.0 breaking change - no longer needs client ID, as only one works as discussed in #9.
+
 ## Usage
 `npm install --save twitch-get-stream`
 
