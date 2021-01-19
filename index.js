@@ -10,38 +10,73 @@ var titleCase = function(str) {
     return str.split(' ').map(function(word) { return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); }).join(' ');
 }
 
-
 // Twitch functions
 var getAccessToken = function(channel) {
     // Get access token
-    return axios.get('https://api.twitch.tv/api/channels/' + channel + '/access_token', {
-        headers: {
-            'Client-ID': clientId
-        }
-    }).then(function(res) {
-        return res.data;
-    });
+    return axios
+        .post(
+            'https://gql.twitch.tv/gql',
+            {
+                operationName: 'PlaybackAccessToken',
+                extensions: {
+                    persistedQuery: {
+                        version: 1,
+                        sha256Hash:
+                            '0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712',
+                    },
+                },
+                variables: {
+                    isLive: true,
+                    login: channel,
+                    isVod: false,
+                    vodID: '',
+                    playerType: 'site',
+                },
+            },
+            {
+                headers: {
+                    'Client-ID': clientId,
+                    referer: 'https://player.twitch.tv',
+                    origin: 'https://player.twitch.tv',
+                },
+            }
+        )
+        .then(function (res) {
+            return res.data.data.streamPlaybackAccessToken;
+        });
 }
 
 var getPlaylist = function(channel, accessToken) {
     // Get the playlist with given access token data (parsed /access_token response)
     var query = {
         player: 'twitchweb',
-        token: accessToken.token,
-        sig: accessToken.sig,
+        token: accessToken.value,
+        sig: accessToken.signature,
+        fast_bread: true,
+        allow_spectre: 'false',
         allow_audio_only: 'true',
         allow_source: 'true',
         type: 'any',
         p: Math.floor(Math.random() * 99999) + 1
     };
 
-    return axios.get('https://usher.ttvnw.net/api/channel/hls/' + channel + '.m3u8?' + qs.stringify(query), {
-        headers: {
-            'Client-ID': clientId
-        }
-    }).then(function(res) {
-        return res.data;
-    });
+    return axios
+        .get(
+            'https://usher.ttvnw.net/api/channel/hls/' +
+                channel +
+                '.m3u8?' +
+                qs.stringify(query),
+            {
+                headers: {
+                    'Client-ID': clientId,
+                    referer: 'https://player.twitch.tv',
+                    origin: 'https://player.twitch.tv',
+                },
+            }
+        )
+        .then(function (res) {
+            return res.data;
+        });
 }
 
 // Exposed functions
